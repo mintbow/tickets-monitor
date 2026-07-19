@@ -14,10 +14,16 @@ TRAVELPAYOUTS_TOKEN = os.getenv("TRAVELPAYOUTS_TOKEN", "").strip()
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
 
+# Получателей уведомлений может быть несколько — перечислите их chat_id через
+# запятую, например:  TELEGRAM_CHAT_ID=12345678,87654321
+TELEGRAM_CHAT_IDS = [
+    c.strip() for c in TELEGRAM_CHAT_ID.replace(";", ",").split(",") if c.strip()
+]
+
 # --- Параметры поиска ------------------------------------------------------
 ORIGIN = "SVX"                 # Екатеринбург (Кольцово)
 CURRENCY = "rub"
-MONTHS_AHEAD = 6               # на сколько месяцев вперёд смотрим
+MONTHS_AHEAD = 2               # на сколько месяцев вперёд смотрим
 TRIP_DURATION_DAYS = 14        # желаемая длительность поездки (туда-обратно)
 TRIP_DURATION_TOLERANCE = 3    # допуск ± дней вокруг желаемой длительности
 
@@ -44,6 +50,6 @@ def validate() -> list[str]:
         missing.append("TRAVELPAYOUTS_TOKEN")
     if not TELEGRAM_BOT_TOKEN:
         missing.append("TELEGRAM_BOT_TOKEN")
-    if not TELEGRAM_CHAT_ID:
+    if not TELEGRAM_CHAT_IDS:
         missing.append("TELEGRAM_CHAT_ID")
     return missing

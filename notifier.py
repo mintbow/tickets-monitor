@@ -17,23 +17,29 @@ TRIP_TYPE_RU = {
 
 
 def _send(text: str) -> bool:
+    """Отправить сообщение всем получателям из config.TELEGRAM_CHAT_IDS.
+
+    Возвращает True, если доставлено хотя бы одному получателю.
+    """
     url = TELEGRAM_API.format(token=config.TELEGRAM_BOT_TOKEN)
-    try:
-        resp = requests.post(url, data={
-            "chat_id": config.TELEGRAM_CHAT_ID,
-            "text": text,
-            "parse_mode": "HTML",
-            "disable_web_page_preview": "false",
-        }, timeout=30)
-        resp.raise_for_status()
-        payload = resp.json()
-        if not payload.get("ok"):
-            print(f"[telegram] ошибка: {payload}")
-            return False
-        return True
-    except (requests.RequestException, ValueError) as exc:
-        print(f"[telegram] ошибка отправки: {exc}")
-        return False
+    delivered = 0
+    for chat_id in config.TELEGRAM_CHAT_IDS:
+        try:
+            resp = requests.post(url, data={
+                "chat_id": chat_id,
+                "text": text,
+                "parse_mode": "HTML",
+                "disable_web_page_preview": "false",
+            }, timeout=30)
+            resp.raise_for_status()
+            payload = resp.json()
+            if not payload.get("ok"):
+                print(f"[telegram] ошибка для {chat_id}: {payload}")
+                continue
+            delivered += 1
+        except (requests.RequestException, ValueError) as exc:
+            print(f"[telegram] ошибка отправки для {chat_id}: {exc}")
+    return delivered > 0
 
 
 def send_test_message() -> bool:
