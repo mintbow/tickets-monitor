@@ -1,0 +1,51 @@
+name: Aviasales price monitor
+
+on:
+  schedule:
+    # Каждые 30 минут. ВНИМАНИЕ: время в cron — по UTC.
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}   # позволяет запускать вручную кнопкой во вкладке Actions
+
+# Нужно право записи, чтобы коммитить историю цен (data/prices.db) обратно в репозиторий.
+permissions:
+  contents: write
+
+# Не запускать несколько прогонов одновременно, чтобы не конфликтовали пуши истории.
+concurrency:
+  group: aviasales-monitor
+  cancel-in-progress: false
+
+jobs:
+  check-prices:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run monitor (one pass)
+        env:
+          TRAVELPAYOUTS_TOKEN: ${{ secrets.TRAVELPAYOUTS_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python main.py --once
+
+      - name: Persist price history
+        run: |
+          git config user.name "aviasales-monitor[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f data/prices.db
+          if git diff --cached --quiet; then
+            echo "История не изменилась — коммит не нужен."
+          else
+            git commit -m "Обновление истории цен [skip ci]"
+            git push
+          fi
