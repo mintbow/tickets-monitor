@@ -158,7 +158,6 @@ git push
 ### 1. Установка
 
 ```powershell
-cd "C:\Users\ssaas\OneDrive\Документы\Claude\проект 1 - парсер авиабилетов"
 pip install -r requirements.txt
 ```
 
