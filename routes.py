@@ -29,7 +29,7 @@ class Destination:
 
 DESTINATIONS: list[Destination] = [
     # Россия
-    Destination("AER", "Сочи", "Россия", 11000, 4000),
+    Destination("AER", "Сочи", "Россия", 20000, 4000),
     Destination("MRV", "Пятигорск", "Россия", 12000, 5000),  # Минеральные Воды (Кавминводы)
 
     # Турция
